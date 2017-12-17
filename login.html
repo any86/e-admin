@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        #app .box {
+            margin:10% auto;
+            width:400px;
+        }
+
+        #app .box .logo{
+        }
+
+        #app .box .ipt-username{
+            margin-top:15px;
+        }
+
+        #app .box .ipt-password{
+            margin-top:15px;
+        }
+
+        #app .box .btn-login{
+            margin-top:15px;
+            width:100%;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div v-cloak class="box">
+            <h2 class="logo"><i class="el-icon-share"></i> Atom Syetem</h2>
+            <el-input v-model="form.username" placeholder="用户名" class="ipt-username"></el-input>
+            <el-input type="password" v-model="form.password" placeholder="密码" class="ipt-password"></el-input>
+            <el-button @click="submit" :loading="isLoading" icon="el-icon-upload" type="primary" class="btn-login">登陆</el-button>
+        </div>
+
+    </div>
+    <!--  Vue -->
+    <script src="./vue.js"></script>
+    <!-- 组件库 -->
+    <script src="./ele.js"></script>
+    <!-- ajax -->
+    <script src="https://unpkg.com/axios/dist/axios.js"></script>
+    <script>
+        new Vue({
+            el: '#app',
+            data: function () {
+                return {
+                    isLoading: false,
+                    form: {
+                        username: '',
+                        password: ''
+                    }
+                }
+            },
+
+            methods: {
+                submit: function(){
+                    this.isLoading = true;
+                    var _this = this;
+                    setTimeout(function(){
+                        this.isLoading = false;
+                        this.$alert('登陆成功, 欢迎您!', {type: 'success'});
+                    }.bind(this), 1000);
+                
+                }
+            }
+        });
+    </script>
+
+</body>
+
+</html>

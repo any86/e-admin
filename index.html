@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <!-- 引入样式 -->
+    <!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
+    <link rel="stylesheet" href="./css/index.css">
+    
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+
+        [v-cloak] {
+            display: none;
+        }
+
+        .logo {
+            padding: 15px;
+            text-align: left;
+        }
+
+        .user {
+            display: flex;
+            height: 59px;
+            border-bottom: 1px solid #eee;
+            align-items: center;
+        }
+
+        .user .user__avatar {
+            display: block;
+            width: 42px;
+            height: 42px;
+            border-radius: 100%;
+            padding: 0 20px;
+        }
+
+        .user .user__name {
+            text-align: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <el-container v-cloak>
+            <!-- 侧边栏 -->
+            <el-aside width="200px">
+                <!-- 菜单 -->
+                <el-menu @open="open" @close="close" default-active="2" class="el-menu-vertical-demo">
+                    <h3 class="logo" align="center">
+                        <i class="el-icon-edit"></i> Atom System</h3>
+                    <el-submenu index="1">
+                        <template slot="title">
+                            <i class="el-icon-location"></i>
+                            <span>文章管理</span>
+                        </template>
+                        <el-menu-item-group>
+                            <template slot="title">分组一</template>
+                            <el-menu-item index="1-1">选项1</el-menu-item>
+                            <el-menu-item index="1-2">选项2</el-menu-item>
+                        </el-menu-item-group>
+                        <el-menu-item-group title="分组2">
+                            <el-menu-item index="1-3">选项3</el-menu-item>
+                        </el-menu-item-group>
+                        <el-submenu index="1-4">
+                            <template slot="title">选项4</template>
+                            <el-menu-item index="1-4-1">选项1</el-menu-item>
+                        </el-submenu>
+                    </el-submenu>
+                    <el-menu-item index="2">
+                        <i class="el-icon-menu"></i>
+                        <span slot="title">人员管理</span>
+                    </el-menu-item>
+                    <el-menu-item index="3">
+                        <i class="el-icon-setting"></i>
+                        <span slot="title">设置</span>
+                    </el-menu-item>
+                </el-menu>
+            </el-aside>
+
+            <el-container>
+                <!-- 头 -->
+                <el-header style="border-bottom:1px solid #eee;">
+                    <el-row>
+                        <el-col :span="20">
+                            <el-breadcrumb separator="/" style="margin-top:20px;">
+                                <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
+                                <el-breadcrumb-item>cnode</el-breadcrumb-item>
+                                <el-breadcrumb-item>文章管理</el-breadcrumb-item>
+                                <el-breadcrumb-item>列表</el-breadcrumb-item>
+                            </el-breadcrumb>
+                        </el-col>
+                        <el-col :span="4">
+                            <el-dropdown style="float:right;" trigger="click" >
+                                <div class="user">
+                                    <h1 class="user__name" class="logo">banana</h1>
+                                    <img class="user__avatar" src="https://avatars1.githubusercontent.com/u/8264787?s=460&v=4">
+                                </div>
+                                <el-dropdown-menu slot="dropdown">
+                                    <el-dropdown-item>查看</el-dropdown-item>
+                                    <el-dropdown-item>新增</el-dropdown-item>
+                                    <el-dropdown-item>删除</el-dropdown-item>
+                                </el-dropdown-menu>
+                            </el-dropdown>
+                        </el-col>
+                    </el-row>
+
+                </el-header>
+                <el-main>
+                    <!-- 表格 -->
+                    <el-table v-loading="isLoading" stripe :data="tableData" @selection-change="handleSelectionChange">
+                        <el-table-column type="selection" width="55">
+                        </el-table-column>
+
+                        <el-table-column sortable label="标题">
+                            <template slot-scope="scope">
+                                <el-popover trigger="hover" placement="top">
+                                    <h4 style="width:200px;">{{scope.row.title}}</h4>
+                                    <div slot="reference" class="name-wrapper">
+                                        <span>{{scope.row.title.substr(0,20) + '...' }}</span>
+                                    </div>
+                                </el-popover>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column sortable label="时间" width="240">
+                            <template slot-scope="scope">
+                                <i class="el-icon-time"></i>
+                                <span>{{new Date(scope.row.create_at).toLocaleString() }}</span>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column sortable prop="visit_count" label="访问量" width="100">
+                        </el-table-column>
+
+                        <el-table-column sortable prop="tab" label="分类" width="100">
+                            <template slot-scope="scope">
+                                <el-tag v-if="'share' == scope.row.tab" type="warning">{{scope.row.tab}}</el-tag>
+                                <el-tag v-else type="success">{{scope.row.tab}}</el-tag>
+                            </template>
+                        </el-table-column>
+
+                        <el-table-column label="操作" width="200">
+                            <template slot-scope="scope">
+                                <el-button size="mini" @click="showEditPanel(scope.$index)">
+                                    <i class="el-icon-edit"></i> 编辑</el-button>
+                                <el-button size="mini" type="danger" @click="remove(scope.$index)">
+                                    <i class="el-icon-delete"></i> 删除</el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                    <!-- 分页 -->
+                    <el-pagination @size-change="activePageSize=$event" @current-change="activePage=$event" :current-page="activePage" :page-sizes="[5, 10, 15, 20]"
+                        :page-size="activePageSize" layout="total, sizes, prev, pager, next, jumper" :total="200">
+                    </el-pagination>
+
+                    <!-- 编辑dialog -->
+                    <el-dialog title="收货地址" :visible.sync="isShowEditPanel">
+                        <el-alert type="success" show-icon>
+                            当前索引: {{form.index}}
+                        </el-alert>
+                        <el-form :model="form" label-position="left" label-width="80px" style="margin-top:30px">
+                            <el-form-item label="标题">
+                                <el-input v-model="form.title" auto-complete="off"></el-input>
+                            </el-form-item>
+                        </el-form>
+                        <div slot="footer" class="dialog-footer">
+                            <el-button @click="isShowEditPanel = false">取 消</el-button>
+                            <el-button type="primary" @click="saveEdit">确 定</el-button>
+                        </div>
+                    </el-dialog>
+
+
+                </el-main>
+            </el-container>
+
+        </el-container>
+
+    </div>
+    <!--  Vue -->
+    <script src="./vue.js"></script>
+    <!-- 组件库 -->
+    <script src="./ele.js"></script>
+    <!-- ajax -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        new Vue({
+        
+            el: '#app',
+            data: function () {
+                return {
+                    isLoading: true,
+                    multipleSelection: [],
+                    activePage: 1,
+                    activePageSize: 10,
+                    tableData: [],
+                    menuData: {},
+                    visible: false,
+                    activeIndex: 0,
+                    isShowEditPanel: false,
+                    form: {
+                        index: 0,
+                        title: ''
+                    }
+                }
+            },
+
+            mounted() {
+                this.getList();
+            },
+
+            methods: {
+                open(index){
+                    this.$alert(index)
+                },
+
+                close: function(index, path){
+                    this.$alert(index+ '/' + path)
+                },
+                /*
+                * 获取表格数据
+                */
+                getList: function (page, limit) {
+                    this.isLoading = true;
+                    axios.get('https://cnodejs.org/api/v1/topics', {
+                        params: {
+                            page: this.activePage,
+                            limit: this.activePageSize
+                        }
+                    }).then(function (res) {
+                        this.isLoading = false;
+                        this.tableData = res.data.data;
+                    }.bind(this));
+                },
+
+                handleSelectionChange(value) {
+                    this.multipleSelection = value;
+                    this.$alert(value)
+                },
+
+                /**
+                * 展开编辑dialog
+                */
+                showEditPanel: function (index) {
+                    this.form.index = index;
+                    this.form.title = this.tableData[index].title;
+                    this.isShowEditPanel = true;
+                },
+
+                /**
+                * 保存到服务器
+                */
+                saveEdit: function () {
+                    this.tableData[this.form.index].title = this.form.title;
+                    this.isShowEditPanel = false;
+                    this.isLoading = true;
+                    // 此处应该有ajax交互代码
+                    // 暂用setTimeout模拟
+                    setTimeout(function () {
+                        this.isLoading = false;
+                        this.$message('修改成功!');
+                    }.bind(this), 1000);
+                },
+
+                remove(index) {
+                    this.$confirm('是否删除文章: ' + this.tableData[index].title).then(function () {
+                        this.tableData.splice(index, 1);
+                    }.bind(this)).catch(function () {
+                        // 取消按钮的逻辑
+                    });
+                }
+            },
+
+            watch: {
+                activePage() {
+                    this.getList();
+                },
+
+                activePageSize() {
+                    this.getList();
+                }
+            }
+        })
+    </script>
+
+</body>
+
+</html>
