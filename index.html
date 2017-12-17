@@ -119,7 +119,7 @@
                             <template slot-scope="scope">
                                 <el-popover trigger="hover" placement="top">
                                     <h4 style="width:200px;">{{scope.row.title}}</h4>
-                                    <div slot="reference" class="name-wrapper">
+                                    <div slot="reference">
                                         <span>{{scope.row.title.substr(0,20) + '...' }}</span>
                                     </div>
                                 </el-popover>
@@ -153,9 +153,20 @@
                         </el-table-column>
                     </el-table>
                     <!-- 分页 -->
-                    <el-pagination @size-change="activePageSize=$event" @current-change="activePage=$event" :current-page="activePage" :page-sizes="[5, 10, 15, 20]"
-                        :page-size="activePageSize" layout="total, sizes, prev, pager, next, jumper" :total="200">
+                    <el-pagination 
+                        @size-change="changeSize"  
+                        @current-change="changeCurrent" 
+
+                        :current-page="activePage" 
+                        :page-size="activePageSize" 
+
+                        :page-sizes="[5, 10, 15, 20]"
+                        :layout="'total, sizes, prev, pager, next, jumper'" 
+                        :total="200">
                     </el-pagination>
+
+                
+
 
                     <!-- 编辑dialog -->
                     <el-dialog title="收货地址" :visible.sync="isShowEditPanel">
@@ -208,11 +219,19 @@
                 }
             },
 
-            mounted() {
+            created() {
                 this.getList();
             },
 
             methods: {
+                changeCurrent: function(page){
+                    this.activePage=page;
+                },
+
+                changeSize: function(size){
+                    this.activePageSize=size;
+                },
+
                 open(index){
                     this.$alert(index)
                 },
@@ -224,7 +243,7 @@
                 /*
                 * 获取表格数据
                 */
-                getList: function (page, limit) {
+                getList: function () {
                     this.isLoading = true;
                     axios.get('https://cnodejs.org/api/v1/topics', {
                         params: {
@@ -262,7 +281,7 @@
                     // 暂用setTimeout模拟
                     setTimeout(function () {
                         this.isLoading = false;
-                        this.$message('修改成功!');
+                        this.$message('修改成功!'); // 饿了么UI的message组件
                     }.bind(this), 1000);
                 },
 
