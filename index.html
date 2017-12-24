@@ -6,7 +6,7 @@
     <!-- 引入样式 -->
     <!-- <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css"> -->
     <link rel="stylesheet" href="./css/index.css">
-    
+
     <style>
         * {
             padding: 0;
@@ -59,7 +59,9 @@
                         </template>
                         <el-menu-item-group>
                             <template slot="title">分组一</template>
-                            <el-menu-item index="1-1">选项1</el-menu-item>
+                            <el-menu-item index="1-1">
+                                <a href="https://baidu.com">选项1</a>
+                            </el-menu-item>
                             <el-menu-item index="1-2">选项2</el-menu-item>
                         </el-menu-item-group>
                         <el-menu-item-group title="分组2">
@@ -94,7 +96,7 @@
                             </el-breadcrumb>
                         </el-col>
                         <el-col :span="4">
-                            <el-dropdown style="float:right;" trigger="click" >
+                            <el-dropdown style="float:right;" trigger="click">
                                 <div class="user">
                                     <h1 class="user__name" class="logo">banana</h1>
                                     <img class="user__avatar" src="https://avatars1.githubusercontent.com/u/8264787?s=460&v=4">
@@ -110,23 +112,24 @@
 
                 </el-header>
                 <el-main>
+                    <el-button type="danger" @click="removeSelected">删除所选</el-button>
                     <!-- 表格 -->
-                    <el-table v-loading="isLoading" stripe :data="tableData" @selection-change="handleSelectionChange">
+                    <el-table v-loading="isLoading" stripe :data="tableData" @selection-change="selectChange">
                         <el-table-column type="selection" width="55">
                         </el-table-column>
 
-                        <el-table-column sortable label="标题">
+                        <el-table-column label="标题">
                             <template slot-scope="scope">
                                 <el-popover trigger="hover" placement="top">
                                     <h4 style="width:200px;">{{scope.row.title}}</h4>
-                                    <div slot="reference">
+                                    <template slot="reference">
                                         <span>{{scope.row.title.substr(0,20) + '...' }}</span>
-                                    </div>
+                                    </template>
                                 </el-popover>
                             </template>
                         </el-table-column>
 
-                        <el-table-column sortable label="时间" width="240">
+                        <el-table-column label="时间" width="240">
                             <template slot-scope="scope">
                                 <i class="el-icon-time"></i>
                                 <span>{{new Date(scope.row.create_at).toLocaleString() }}</span>
@@ -153,19 +156,9 @@
                         </el-table-column>
                     </el-table>
                     <!-- 分页 -->
-                    <el-pagination 
-                        @size-change="changeSize"  
-                        @current-change="changeCurrent" 
-
-                        :current-page="activePage" 
-                        :page-size="activePageSize" 
-
-                        :page-sizes="[5, 10, 15, 20]"
-                        :layout="'total, sizes, prev, pager, next, jumper'" 
-                        :total="200">
+                    <el-pagination @size-change="changeSize" @current-change="changeCurrent" :current-page="activePage" :page-size="activePageSize"
+                        :page-sizes="[5, 10, 15, 20]" :layout="'total, sizes, prev, pager, next, jumper'" :total="200">
                     </el-pagination>
-
-                
 
 
                     <!-- 编辑dialog -->
@@ -184,7 +177,6 @@
                         </div>
                     </el-dialog>
 
-
                 </el-main>
             </el-container>
 
@@ -199,7 +191,7 @@
     <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
     <script>
         new Vue({
-        
+
             el: '#app',
             data: function () {
                 return {
@@ -215,7 +207,8 @@
                     form: {
                         index: 0,
                         title: ''
-                    }
+                    },
+                    selectedIds: []
                 }
             },
 
@@ -224,22 +217,54 @@
             },
 
             methods: {
-                changeCurrent: function(page){
-                    this.activePage=page;
+                removeSelected() {
+
+                    for (var j in this.selectedIds) {
+                        for (var i in this.tableData) {
+                            if (this.tableData[i].id === this.selectedIds[j]) {
+                                this.tableData.splice(i, 1);
+                                break;
+                            }
+                        }
+                    }
+
+
+                    // for (var i in this.tableData) {
+                    //     console.log(i)
+                    //     for (var j in this.selectedIds) {
+                    //         if (this.tableData[i].id === this.selectedIds[j]) {
+                    //             this.tableData.splice(i, 1);
+                    //             break;
+                    //         }
+                    //     }
+                    // }
+
+
                 },
 
-                changeSize: function(size){
-                    this.activePageSize=size;
+                selectChange(selection, row) {
+                    this.selectedIds = [];
+                    for (var i in selection) {
+                        this.selectedIds.push(selection[i].id);
+                    }
                 },
 
-                open(index){
+                changeCurrent: function (page) {
+                    this.activePage = page;
+                },
+
+                changeSize: function (size) {
+                    this.activePageSize = size;
+                },
+
+                open(index) {
                     this.$alert(index)
                 },
 
-                close: function(index, path){
-                    this.$alert(index+ '/' + path)
+                close: function (index, path) {
+                    this.$alert(index + '/' + path)
                 },
-                
+
                 /*
                 * 获取表格数据
                 */
@@ -258,7 +283,15 @@
 
                 handleSelectionChange(value) {
                     this.multipleSelection = value;
-                    this.$alert(value)
+
+                    // console.log(value)
+
+                    // var array = [];
+                    // for(var k in value) {
+                    //     array.push(value[k].id)
+                    // }
+                    // console.log(array)
+                    // this.$alert(value)
                 },
 
                 /**
@@ -289,6 +322,7 @@
                     this.$confirm('是否删除文章: ' + this.tableData[index].title).then(function () {
                         this.tableData.splice(index, 1);
                     }.bind(this)).catch(function () {
+                        alert(1)
                         // 取消按钮的逻辑
                     });
                 }

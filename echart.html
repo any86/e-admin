@@ -348,8 +348,8 @@
             },
 
             mounted() {
-                // var el = document.getElementById('main')
-                var el = this.$refs.main;
+                var el = document.getElementById('main')
+                // var el = this.$refs.main;
                 var myChart = echarts.init(el);
                 myChart.setOption(this.optionC);
             }
